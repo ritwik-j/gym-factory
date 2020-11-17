@@ -99,7 +99,7 @@ class DeepQNetwork(nn.Module):
 class Agent(object):
     def __init__(self, gamma, epsilon, alpha,
                 maxMemorySize, epsEnd=0.05,
-                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(3)]):
+                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(9)]):
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd

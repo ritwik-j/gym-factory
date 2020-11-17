@@ -31,7 +31,7 @@ HEIGHT = 6 *BELT_SPEED
 SkittleTypes = BELT_WIDTH/(BELT_SPEED*SpaceBetweenSkittles)
 WORLD_ARRAY_SIZE = BELT_LENGTH*BELT_WIDTH*HEIGHT
 
-EPISODES = 500
+EPISODES = 5000
 
 # PATH = Path("""/Users/ritwik/Desktop/gym-factory/DQN/""")
 # PATH1 = Path("""/Users/ritwik/Desktop/gym-factory/DQN/DQN.png""")
@@ -99,7 +99,7 @@ class DeepQNetwork(nn.Module):
 class Agent(object):
     def __init__(self, gamma, epsilon, alpha,
                 maxMemorySize, epsEnd=0.05,
-                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(3)]):
+                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(10)]):
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd
@@ -318,6 +318,35 @@ def main():
         print("Loss: ", loss)
         rewardHistory.append(reward)
         lossHistory.append(loss)
+
+        if (i%(500)==0):
+            timestr = strftime("%Y%m%d-%H%M%S")
+    
+            if not os.path.exists(os.path.join(PATH)):
+                os.mkdir(os.path.join(PATH))
+
+            if not os.path.exists(os.path.join(PATH, timestr)):
+                os.mkdir(os.path.join(PATH, timestr))
+
+            dir = os.path.join(PATH, timestr)
+
+
+            brain.saveModel(dir)
+            episodes = np.linspace(0, EPISODES, EPISODES)
+            # to store data
+            episodesN = np.array(episodes)
+            np.save(os.path.join(dir, 'episodes.npy'), episodesN)
+            rewardHistoryN = np.array(rewardHistory)
+            np.save(os.path.join(dir, 'rewardHistory.npy'), rewardHistoryN)
+            lossHistoryN = np.array(lossHistory)
+            np.save(os.path.join(dir,'lossHistory.npy'), lossHistoryN)
+            beltHistoryN = np.array(beltHistory)
+            np.save(os.path.join(dir,'beltHistory.npy'), beltHistoryN)
+            positionHistoryN = np.array(positionHistory)
+            np.save(os.path.join(dir,'positionHistory.npy'), positionHistoryN)
+            itemHistoryN = np.array(itemHistory)
+            np.save(os.path.join(dir,'itemHistory.npy'), itemHistoryN)
+            env.render(rewardHistory, lossHistory, i+1, dir, notLast=False)
 
         # print("i ", i)
         # print ("i%10 ", i%10)

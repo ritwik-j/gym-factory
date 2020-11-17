@@ -223,7 +223,7 @@ class FactoryEnv(gym.Env):
     armSpeed = floor(((2/9)*(armSpeed+1)+(7/9))*5)
     
     # Check Bounds
-    dx,dy,dz = ceil(Direction[0]*armSpeed*BELT_SPEED), ceil(Direction[1]*armSpeed*BELT_SPEED) , ceil(Direction[2]*armSpeed*BELT_SPEED)
+    dx,dy,dz = ceil(Direction[0]*armSpeed), ceil(Direction[1]*armSpeed) , ceil(Direction[2]*armSpeed)
     # print('position:',Position)
     ax,ay,az = self.position[0], self.position[1],self.position[2]
     
@@ -237,11 +237,11 @@ class FactoryEnv(gym.Env):
         # no change in position
         return 0
     # Check if arm interacts with the belt
-    if ax+dx == 0:
-        if self.workspace[az+dz][ay+dy] == 0:
+    if az+dz == 0:
+        if self.workspace[ay+dy][ax+dx] == 0:
             if self.hold == True:
                 # place item
-                self.workspace[az+dz][ay+dy] = self.item
+                self.workspace[ay+dy][ax+dx] = self.item
                 if (ay+dy)%5 == 0:
                     if floor((ay+dy)/10)+1 == self.item and self.item != 0:
                         self.world[ax][ay][az] = 0
@@ -265,7 +265,7 @@ class FactoryEnv(gym.Env):
         else:   #belt spot is occupied
             if self.hold == False:
                 self.hold = True
-                self.item = self.workspace[az+dz][ay+dy]
+                self.item = self.workspace[ay+dy][ax+dx]
                 self.world[ax][ay][az] = 0
                 self.world[ax+dx][ay+dy][az+dz] = 9  #right?
                 self.position = (ax+dx, ay+dy, az+dz)
