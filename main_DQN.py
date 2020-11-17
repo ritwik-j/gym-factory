@@ -213,7 +213,7 @@ class Agent(object):
             # print("Qpred", Qpred[i, armspeed, action])
 
 
-        if self.steps > 500:
+        if self.steps > 250:
             if self.EPSILON - 1e-4 > self.EPS_END:
                 self.EPSILON -= 1e-4
             else:

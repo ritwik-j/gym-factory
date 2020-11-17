@@ -213,7 +213,7 @@ class Agent(object):
             # print("Qpred", Qpred[i, armspeed, action])
 
 
-        if self.steps > 500:
+        if self.steps > 250:
             if self.EPSILON - 1e-4 > self.EPS_END:
                 self.EPSILON -= 1e-4
             else:
@@ -251,7 +251,7 @@ def main():
     print("Initializing Agent...")
     brain = Agent(gamma = 0.9, epsilon=0.5,
                 alpha=0.0001, maxMemorySize=MAX_MEM,
-                replace=None)
+                replace=20)
     print("Agent Initialized")
 
     print ('Initializing memory')
