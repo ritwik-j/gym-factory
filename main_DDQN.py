@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from pathlib import Path
+from time import strftime
 import os
 # np.set_printoptions(threshold=sys.maxsize)
 
@@ -36,8 +37,8 @@ EPISODES = 500
 # PATH1 = Path("""/Users/ritwik/Desktop/gym-factory/DQN/DQN.png""")
 # PATH = Path(os.path.join(os.getcwd(), '/DQN/'))
 # PATH1 = Path(os.path.join(os.getcwd(), '/DQN/DQN_exR.png'))
-PATH = Path("""/home/arc/Documents/gym-factory/DDQN/""")
-PATH1 = Path("""/home/arc/Documents/gym-factory/DDQN/DDQN_exR.png""")
+PATH = Path("""/home/arc/Documents/gym-factory/DDQN_exR/""")
+# PATH1 = Path("""/home/arc/Documents/gym-factory/DDQN_exR/DDQN_exR.png""")
 
 
 class DeepQNetwork(nn.Module):
@@ -227,9 +228,9 @@ class Agent(object):
 
         return loss.item()
 
-    def saveModel(self):
+    def saveModel(self, dir):
         
-        save_prefix = PATH
+        save_prefix = dir
         save_path1 = '{}/Q_eval.pt'.format(save_prefix)
         save_path2 = '{}/Q_next.pt'.format(save_prefix)
         output = open(save_path1, mode="wb")
@@ -320,29 +321,40 @@ def main():
 
         # print("i ", i)
         # print ("i%10 ", i%10)
-        if ((i-1)%5 == 0):
-            env.render(rewardHistory, lossHistory, i+1, PATH1)
+        # if ((i-1)%5 == 0):
+        #     env.render(rewardHistory, lossHistory, i+1, PATH1)
         
     print('Training Complete!')
     # env.render(rewardHistory, lossHistory, i+1, notLast=False)
     
-    brain.saveModel()
+    timestr = strftime("%Y%m%d-%H%M%S")
+    
+    if not os.path.exists(os.path.join(PATH)):
+        os.mkdir(os.path.join(PATH))
+
+    if not os.path.exists(os.path.join(PATH, timestr)):
+        os.mkdir(os.path.join(PATH, timestr))
+
+    dir = os.path.join(PATH, timestr)
+
+
+    brain.saveModel(dir)
     episodes = np.linspace(0, EPISODES, EPISODES)
     # to store data
     episodes = np.array(episodes)
-    np.save(PATH/'episodes.npy', episodes)
+    np.save(os.path.join(dir, 'episodes.npy'), episodes)
     rewardHistory = np.array(rewardHistory)
-    np.save(PATH/'rewardHistory.npy', rewardHistory)
+    np.save(os.path.join(dir, 'rewardHistory.npy'), rewardHistory)
     lossHistory = np.array(lossHistory)
-    np.save(PATH/'lossHistory.npy', lossHistory)
+    np.save(os.path.join(dir,'lossHistory.npy'), lossHistory)
     beltHistory = np.array(beltHistory)
-    np.save(PATH/'beltHistory.npy', beltHistory)
+    np.save(os.path.join(dir,'beltHistory.npy'), beltHistory)
     positionHistory = np.array(positionHistory)
-    np.save(PATH/'positionHistory.npy', positionHistory)
+    np.save(os.path.join(dir,'positionHistory.npy'), positionHistory)
     itemHistory = np.array(itemHistory)
-    np.save(PATH/'itemHistory.npy', itemHistory)
+    np.save(os.path.join(dir,'itemHistory.npy'), itemHistory)
 
-    env.render(rewardHistory, lossHistory, i+1, PATH1, notLast=False)
+    env.render(rewardHistory, lossHistory, i+1, dir, notLast=False)
 
 if __name__ == "__main__":
     main()

@@ -9,6 +9,7 @@ from math import floor, ceil
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import os
+from pathlib import Path
 
 
 N_DISCRETE_ACTIONS = 27
@@ -293,7 +294,7 @@ class FactoryEnv(gym.Env):
       raise Exception("Manipulator hold error - hold but has no item")
     return 7
 
-  def render(self,reward, loss, episodes, PATH, mode='human', close=False, notLast=True):
+  def render(self,reward, loss, episodes, dir, mode='human', close=False, notLast=True):
     conveyor = np.concatenate((self.workspace,self.gen))
     conveyor = np.swapaxes(conveyor,0,1)
     
@@ -323,7 +324,8 @@ class FactoryEnv(gym.Env):
     if (notLast):
       plt.close()
     else:
-      plt.savefig(PATH)
+      savedir = os.path.join(dir, 'final.png')
+      plt.savefig(savedir)
       plt.close()
 
     plt.show()

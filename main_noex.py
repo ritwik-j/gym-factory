@@ -253,7 +253,7 @@ def main():
     print("Initializing Agent...")
     brain = Agent(gamma = 0.9, epsilon=0.5,
                 alpha=0.0001, maxMemorySize=MAX_MEM,
-                replace=None)
+                replace=20)
     print("Agent Initialized")
 
     print ('Initializing memory')
@@ -321,7 +321,7 @@ def main():
 
         # print("i ", i)
         # print ("i%10 ", i%10)
-        if ((i-1)%5 == 0):
+        if ((i-1)%100 == 0):
             env.render(rewardHistory, lossHistory, i+1, PATH1)
         
     print('Training Complete!')
