@@ -30,14 +30,14 @@ HEIGHT = 6 *BELT_SPEED
 SkittleTypes = BELT_WIDTH/(BELT_SPEED*SpaceBetweenSkittles)
 WORLD_ARRAY_SIZE = BELT_LENGTH*BELT_WIDTH*HEIGHT
 
-EPISODES = 100
+EPISODES = 500
 
-# PATH = Path("""/Users/ritwik/Desktop/gym-factory/DQN_no_exR/""")
-# PATH1 = Path("""/Users/ritwik/Desktop/gym-factory/DQN_no_exR/DQN_no_exR.png""")
+PATH = Path("""/Users/ritwik/Documents/Github/gym-factory/DDQN_no_exR/""")
+PATH1 = Path("""/Users/ritwik/Documents/Github/gym-factory/DDQN_no_exR/DDQN_no_exR.png""")
 # PATH = Path(os.path.join(os.getcwd(), '/DQN_no_exR/'))
 # PATH1 = Path(os.path.join(os.getcwd(), '/DQN_no_exR/DQN_no_exR.png'))
-PATH = Path("""~/Documents/gym-factory/DQN_no_exR/""")
-PATH1 = Path("""~/Documents/gym-factory/DQN_no_exR/DQN_no_exR.png""")
+# PATH = Path("""~/Documents/gym-factory/DDQN_no_exR/""")
+# PATH1 = Path("""~/Documents/gym-factory/DDQN_no_exR/DDQN_no_exR.png""")
 
 class DeepQNetwork(nn.Module):
     def __init__(self, ALPHA):
@@ -45,21 +45,21 @@ class DeepQNetwork(nn.Module):
 
         # self.conv1 = nn.Conv3d(32, 1, (300,66,31), stride = 1)        # convolution layer 1
         self.conv1 = nn.Conv3d(1, 1, (271,47,16), stride = 1)
-        self.conv1.cuda()
+        # self.conv1.cuda()
 
         # self.conv2 = nn.Conv3d(1,300,1,stride=1)       # convolution layer 2
         self.conv2 = nn.Conv3d(1,1,(11,6,7),stride=1)
-        self.conv2.cuda()
+        # self.conv2.cuda()
 
         # self.fc1 = nn.Linear(30, 2048)                        # fully connected layer 1
         self.fc1 = nn.Linear(300, 2048)
-        self.fc1.cuda()
+        # self.fc1.cuda()
         # fc1 output is torch.Size([1, 2048])
         self.fc2 = nn.Linear(2048, 256)                       # fully connected layer 2
-        self.fc2.cuda()
+        # self.fc2.cuda()
         # fc2 output is torch.Size([1, 256])
         self.fc3 = nn.Linear(256, 27)                       # fully connected layer 2
-        self.fc3.cuda()
+        # self.fc3.cuda()
         # fc3 output is torch.Size([1, 27])
 
         self.optimizer = optim.RMSprop(self.parameters(), lr=ALPHA)
