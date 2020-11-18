@@ -4,14 +4,12 @@ This package contains four 'main' files which can be used to launch different va
 Author(s): Arjun Agrawal, Ritwik Jha
 
 ## System Requirements
-The following are the libraries needed to run this project. The project is written in python 3.6.9. 
+The following are the libraries needed to run this project. The project is written in python 3.6.9. [Note: PyTorch has some teething issues with Conda environments, hence kindly use pyenv as specified in the requirements.txt file.]
 
 >torch=1.7.0  
 >matplotlib=3.3.3  
 >numpy=1.19.4  
->gym=0.17.3
-
-Note: PyTorch has some teething issues with Conda environments, hence kindly use pyenv as specified in the requirements.txt file.
+>gym=0.17.3  
 
 ## Neural Networks Used
 
