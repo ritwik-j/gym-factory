@@ -32,7 +32,6 @@ HEIGHT = 6 *BELT_SPEED
 SkittleTypes = BELT_WIDTH/(BELT_SPEED*SpaceBetweenSkittles)
 WORLD_ARRAY_SIZE = BELT_LENGTH*BELT_WIDTH*HEIGHT
 
-PATH = Path("""/Users/ritwik/Desktop/gym-factory/DQN/""")
 FILE = Path("""/Users/ritwik/Documents/Github/gym-factory/Trained_DDQN/Q_eval.pt""")
 
 
@@ -81,117 +80,6 @@ class DeepQNetwork(nn.Module):
         actions = self.fc3(actions)
 
         return actions
-
-
-class Agent(object):
-    def __init__(self, gamma, alpha,
-                maxMemorySize, epsEnd=0.05,
-                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(10)]):
-        self.GAMMA = gamma
-        self.EPSILON = 1
-        self.EPS_END = epsEnd
-        self.actionSpace = actionSpace
-        self.speedSpace = speedSpace
-        self.memSize = maxMemorySize
-        self.steps = 0.0
-        self.learn_step_counter = 0
-        self.memory = []
-        self.memCntr = 0
-        self.replace_target_cnt = replace
-        self.Q_eval = DeepQNetwork(alpha)
-        # self.Q_next = DeepQNetwork(alpha)
-
-    def storeTransition(self, state, action, speed, reward, state_):
-        if self.memCntr < self.memSize:
-            self.memory.append([state, action, speed, reward, state_])
-        else:
-            self.memory[self.memCntr % self.memSize] = [state, action, speed, reward, state_]
-        self.memCntr += 1
-
-    # function to choose an action based on a given state observation
-    def chooseAction(self, observation):
-        # print("epsilon: ", self.EPSILON)
-        rand = np.random.random()
-        
-        # forward propagate the observation matrix through the NN
-        actions = self.Q_eval.forward(observation)
-        
-        # epsilon soft approach
-        if rand < 1 - self.EPSILON: # then exploit action based on estimated Q-value
-            # choose greedy action
-            a = actions.cpu().detach().numpy()
-            act = np.unravel_index(a.argmax(), a.shape)
-            armSpeed, bestAction =  int(act[0]), int(act[1])
-        else:           # else choose random action
-            bestAction = np.random.choice(self.actionSpace) 
-            armSpeed = np.random.choice(self.speedSpace)
-        self.steps += 1.0
-
-        return bestAction, armSpeed
-
-    # function to train Neural Network based on the batch input
-    def learn(self, batch_size):
-        self.Q_eval.optimizer.zero_grad()       # zeros gradients for batch optimization
-
-        # # check whether target network should be replaced
-        # if self.replace_target_cnt is not None and \
-        #     self.learn_step_counter % self.replace_target_cnt == 0:
-        #     self.Q_next.load_state_dict(self.Q_eval.state_dict())
-
-        length = 0
-
-        # iterate through the experience until the batch of desired size is sampled 
-        while(length != BATCH_SIZE):
-            # get some subset of the array of memory samples
-            if self.memCntr + batch_size < self.memSize:
-                memStart = int(np.random.choice(range(self.memCntr)))
-            else:
-                memStart = int(np.random.choice(range(self.memCntr - batch_size-1)))
-            miniBatch = self.memory[memStart:memStart+batch_size]
-            miniBatch = list(miniBatch)
-            length = len(miniBatch)
-        memory = np.array(list(miniBatch))
-
-
-        # feedforward the current state and the predicted state
-        Qpred = self.Q_eval.forward(list(memory[:, 0])).to(self.Q_eval.device) # feedforward the initial states
-        Qnext = self.Q_eval.forward(list(memory[:, 4])).to(self.Q_eval.device) # feedforward the final states 
-
-        # convert rewards array to tensor
-        rewards = T.Tensor(list(memory[:, 3])).to(self.Q_eval.device) 
-        Qtarget = Qpred.clone()
-
-        for i in range(BATCH_SIZE):
-            # get speed and action index
-            armspeed = memory[i][2]
-            action = memory[i][1]
-
-            # Bellman equation for Q value update
-            Qtarget[i,armspeed, action] = rewards[i] + self.GAMMA*T.max(Qnext[i])
-
-        # Decaying epsilon determined by the current step
-        self.EPSILON = 1.0 - (self.steps/float(EPISODES))
-
-        loss = self.Q_eval.loss(Qtarget, Qpred).to(self.Q_eval.device)
-        loss.backward()
-        self.Q_eval.optimizer.step()
-        self.learn_step_counter += 1
-
-        return loss.item()
-
-    # function to save the current model
-    def saveModel(self, dir):
-        
-        save_prefix = dir
-        save_path1 = '{}/Q_eval.pt'.format(save_prefix)
-        # save_path2 = '{}/Q_next.pt'.format(save_prefix)
-        output = open(save_path1, mode="wb")
-        T.save(self.Q_eval.state_dict(), output)
-        output.close() 
-
-        # output = open(save_path2, mode="wb")
-        # T.save(self.Q_next.state_dict(), output)
-        # output.close()
 
 
 def main():

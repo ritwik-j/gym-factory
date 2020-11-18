@@ -13,14 +13,13 @@ The following are the libraries needed to run this project. The project is writt
 
 ## Neural Networks Used
 
-| S/No. | Algorithm | Experience | Epsilon | Height Heuristic |
-
-|-------|-----------|------------|---------|------------------|
-|   1   |    DDQN   |    Yes     | Fixed   |        No        |
-|   2   |    DQN    |     No     | Decaying|       Yes        |
-|   3   |    DQN    |    Yes     | Decaying|       Yes        |
-|   4   |    DDQN   |     No     | Decaying|       Yes        |
-|   5   |    DDQN   |    Yes     | Decaying|       Yes        |
+| S/No. | Algorithm | Experience Replay | Epsilon  | Height Heuristic |
+|-------|-----------|-------------------|----------|------------------|
+| 1     | DDQN      | Yes               | Fixed    | No               |
+| 2     | DQN       | No                | Decaying | Yes              |
+| 3     | DQN       | Yes               | Decaying | Yes              |
+| 4     | DDQN      | No                | Decaying | Yes              |
+| 5     | DDQN      | Yes               | Decaying | Yes              |
 
 
 ## Files
