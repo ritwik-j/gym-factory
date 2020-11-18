@@ -42,6 +42,7 @@ dirDict = {0:(0,0,0),1:(0,0,1),2:(0,1,0),
           18:(-1,0,0), 19:(-1,0,1), 20:(-1,1,0),
           21:(-1,0,-1), 22:(-1,-1,0), 23:(-1,1,1),
           24:(-1,1,-1), 25:(-1,-1,-1), 26:(-1,-1,1)}
+heighDict = {0:4, 5:3, 10:2, 15:1, 20:0}
 
 # dictionary of rewards
 rewardDict = {0:(-10), #bump bounds,
@@ -67,7 +68,7 @@ class FactoryEnv(gym.Env):
 
     self.workspace = [[0 for i in range(BELT_WIDTH)] for j in range(WS_LENGTH)] # for arm effector
     self.world = np.zeros((WS_LENGTH, BELT_WIDTH, HEIGHT), int)
-    self.world[0][0][HEIGHT-1] = 1       # initial position of arm effector
+    self.world[0][0][HEIGHT-1] = 9       # initial position of arm effector
     self.position = (0,0,HEIGHT-1)      # store initial position
     self.hold = False
     self.item = 0
@@ -77,9 +78,20 @@ class FactoryEnv(gym.Env):
 
   def step(self, action, armSpeed):
     reward_indicator = self.armMove(action, armSpeed) # beltMove is called inside armMove
-    _,ay,_ = self.position[0], self.position[1], self.position[2] 
+    _,ay,az = self.position[0], self.position[1], self.position[2] 
     # print ("reward indicator: ", reward_indicator)
     # get reward
+
+    if (az < 5): 
+      az = 0
+    elif (az < 10):
+      az = 5
+    elif (az < 15):
+      az = 10
+    elif (az < 20):
+      az = 15
+    elif (az < 30):
+      az = 20
 
     if reward_indicator > 8 or reward_indicator < 0:
       raise ("Error in return from ArmMove(): return out of bounds.")
@@ -90,17 +102,18 @@ class FactoryEnv(gym.Env):
       if error < 1 or error > 7:
           print("ceil is ", (ay+1)/10, "self.item is ", self.item, "error is ", error)
           raise ("Error in skittle placement error calculation.")
-      reward = floor((error)**(1/3)*-10)
+      reward = floor((error)**(1/3)*-10) + heighDict[az]
 
     elif reward_indicator == 6:  # BUMP ITEM
       error = abs((ceil((ay+1)/10 - self.item)))
       if error < 0 or error > 7:
           raise ("Error in skittle placement error calculation.")
-      reward = floor((error)**(1/3)*-5)
-
+      reward = floor((error)**(1/3)*-5) + heighDict[az]
+    
     else:   
-      reward = rewardDict[reward_indicator]
-    print("action: ", action, ", arm speed: ", armSpeed,", reward indicator: ", reward_indicator, ", hold: ", self.hold,", item: ", self.item,", new position: ", self.position)
+      reward = rewardDict[reward_indicator] + heighDict[az]
+
+    print("action: ", action, ", arm speed: ", armSpeed,", reward indicator: ", reward_indicator, ", result: ", reward, ", hold: ", self.hold,", item: ", self.item,", new position: ", self.position)
     return reward
 
 
@@ -114,11 +127,11 @@ class FactoryEnv(gym.Env):
     genNP = np.array(self.gen)
     wsNP = np.array(self.workspace)
     
-    beltNP = np.concatenate((genNP,wsNP), axis = 0)
+    beltNP = np.concatenate((wsNP, genNP), axis = 0)
     observation = np.zeros((300, 66, 31), dtype=np.int64)
 
     # observation[:self.world.shape[0], :self.world.shape[1], :self.world.shape[2]] = self.world
-    observation[self.position[0], self.position[1], self.position[2]] = 9
+    observation[self.position[0], self.position[1], self.position[2]+1] = 9
     observation[:,:,0] = beltNP
     return observation.tolist(), beltNP.tolist(), self.position, self.item
 
@@ -200,6 +213,8 @@ class FactoryEnv(gym.Env):
     # print(self.world)
 
   def armMove(self, action, armSpeed):
+    print("Next Action: ", action)
+    print("Next Speed: ", armSpeed)
     Direction = dirDict[action]
     # Position = self.position
     # print("Direction: ", Direction)
@@ -238,10 +253,10 @@ class FactoryEnv(gym.Env):
         return 0
     # Check if arm interacts with the belt
     if az+dz == 0:
-        if self.workspace[ay+dy][ax+dx] == 0:
+        if self.workspace[ax+dx][ay+dy] == 0:
             if self.hold == True:
                 # place item
-                self.workspace[ay+dy][ax+dx] = self.item
+                self.workspace[ax+dx][ay+dy] = self.item
                 if (ay+dy)%5 == 0:
                     if floor((ay+dy)/10)+1 == self.item and self.item != 0:
                         self.world[ax][ay][az] = 0
@@ -265,7 +280,7 @@ class FactoryEnv(gym.Env):
         else:   #belt spot is occupied
             if self.hold == False:
                 self.hold = True
-                self.item = self.workspace[ay+dy][ax+dx]
+                self.item = self.workspace[ax+dx][ay+dy]
                 self.world[ax][ay][az] = 0
                 self.world[ax+dx][ay+dy][az+dz] = 9  #right?
                 self.position = (ax+dx, ay+dy, az+dz)

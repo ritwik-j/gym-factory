@@ -13,10 +13,10 @@ from time import strftime
 import os
 # np.set_printoptions(threshold=sys.maxsize)
 
-BATCH_SIZE = 32
+BATCH_SIZE = 1
 
 N_DISCRETE_ACTIONS = 27
-MAX_MEM = 100  # 100
+MAX_MEM = 2  # 100
 
 N_COLOURS = 7
 SpaceBetweenSkittles = 2
@@ -37,8 +37,8 @@ EPISODES = 5000
 # PATH1 = Path("""/Users/ritwik/Desktop/gym-factory/DQN/DQN.png""")
 # PATH = Path(os.path.join(os.getcwd(), '/DQN/'))
 # PATH1 = Path(os.path.join(os.getcwd(), '/DQN/DQN_exR.png'))
-PATH = Path("""/home/arc/Documents/gym-factory/DQN_exR/""")
-# PATH1 = Path("""/home/arc/Documents/gym-factory/DQN_exR/DQN_exR.png""")
+PATH = Path("""/home/arc/Documents/gym-factory/DDQN_nexR/""")
+# PATH1 = Path("""/home/arc/Documents/gym-factory/DDQN_exR/DDQN_exR.png""")
 
 
 class DeepQNetwork(nn.Module):
@@ -62,7 +62,7 @@ class DeepQNetwork(nn.Module):
 
         self.optimizer = optim.RMSprop(self.parameters(), lr=ALPHA)
         self.loss = nn.MSELoss()  #nn.SmoothL1Loss() nn.MSELoss() nn.L1Loss
-        self.device = T.device('cuda:1' if T.cuda.is_available() else 'cpu')
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         if T.cuda.is_available():
             print("Using CUDA")
         else:
@@ -79,9 +79,9 @@ class DeepQNetwork(nn.Module):
             observation = T.unsqueeze(observation, 0)
         elif len(list(observation.shape)) == 4:
             observation = T.unsqueeze(observation, 1)
+        observation = observation.to(self.device)
         # observation = self.norm(observation)
         # print('obs shape', observation.size())
-        observation = observation.to(self.device)
         observation = F.relu(self.conv1(observation))
         observation = F.relu(self.conv2(observation))
         observation = observation.reshape(-1, 10, 300)
@@ -99,7 +99,7 @@ class DeepQNetwork(nn.Module):
 class Agent(object):
     def __init__(self, gamma, epsilon, alpha,
                 maxMemorySize, epsEnd=0.05,
-                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(10)]):
+                replace=10, actionSpace=[i for i in range(27)], speedSpace=[i for i in range(9)]):
         self.GAMMA = gamma
         self.EPSILON = epsilon
         self.EPS_END = epsEnd
@@ -112,7 +112,7 @@ class Agent(object):
         self.memCntr = 0
         self.replace_target_cnt = replace
         self.Q_eval = DeepQNetwork(alpha)
-        # self.Q_next = DeepQNetwork(alpha)
+        self.Q_next = DeepQNetwork(alpha)
 
     def storeTransition(self, state, action, speed, reward, state_):
         if self.memCntr < self.memSize:
@@ -152,10 +152,10 @@ class Agent(object):
     def learn(self, batch_size):
         self.Q_eval.optimizer.zero_grad()       # zeros gradients for batch optimization
 
-        # # check whether target network should be replaced
-        # if self.replace_target_cnt is not None and \
-        #     self.learn_step_counter % self.replace_target_cnt == 0:
-        #     self.Q_next.load_state_dict(self.Q_eval.state_dict())
+        # check whether target network should be replaced
+        if self.replace_target_cnt is not None and \
+            self.learn_step_counter % self.replace_target_cnt == 0:
+            self.Q_next.load_state_dict(self.Q_eval.state_dict())
 
         length = 0
 
@@ -180,7 +180,7 @@ class Agent(object):
         # print("memory(state): ", memory[:, 0].shape)
         Qpred = self.Q_eval.forward(list(memory[:, 0])).to(self.Q_eval.device)
         # print("Qnext")
-        Qnext = self.Q_eval.forward(list(memory[:, 4])).to(self.Q_eval.device)
+        Qnext = self.Q_next.forward(list(memory[:, 4])).to(self.Q_eval.device)
         # Qnext = self.Q_eval.forward(list(memory[:, 4])).to(self.Q_eval.device)
 
         # print("Qnext shape: ", Qnext.shape)
@@ -234,14 +234,14 @@ class Agent(object):
         
         save_prefix = dir
         save_path1 = '{}/Q_eval.pt'.format(save_prefix)
-        # save_path2 = '{}/Q_next.pt'.format(save_prefix)
+        save_path2 = '{}/Q_next.pt'.format(save_prefix)
         output = open(save_path1, mode="wb")
         T.save(self.Q_eval.state_dict(), output)
         output.close() 
 
-        # output = open(save_path2, mode="wb")
-        # T.save(self.Q_next.state_dict(), output)
-        # output.close()
+        output = open(save_path2, mode="wb")
+        T.save(self.Q_next.state_dict(), output)
+        output.close()
 
 # set window for running averages in graphs
 window_size = 10
@@ -254,7 +254,7 @@ def main():
     print("Initializing Agent...")
     brain = Agent(gamma = 0.9, epsilon=0.5,
                 alpha=0.0001, maxMemorySize=MAX_MEM,
-                replace=None)
+                replace=20)
     print("Agent Initialized")
 
     print ('Initializing memory')
@@ -357,7 +357,7 @@ def main():
         
     print('Training Complete!')
     # env.render(rewardHistory, lossHistory, i+1, notLast=False)
-
+    
     timestr = strftime("%Y%m%d-%H%M%S")
     
     if not os.path.exists(os.path.join(PATH)):

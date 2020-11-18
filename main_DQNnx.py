@@ -13,10 +13,10 @@ from time import strftime
 import os
 # np.set_printoptions(threshold=sys.maxsize)
 
-BATCH_SIZE = 32
+BATCH_SIZE = 1
 
 N_DISCRETE_ACTIONS = 27
-MAX_MEM = 100  # 100
+MAX_MEM = 2  # 100
 
 N_COLOURS = 7
 SpaceBetweenSkittles = 2
@@ -37,7 +37,7 @@ EPISODES = 5000
 # PATH1 = Path("""/Users/ritwik/Desktop/gym-factory/DQN/DQN.png""")
 # PATH = Path(os.path.join(os.getcwd(), '/DQN/'))
 # PATH1 = Path(os.path.join(os.getcwd(), '/DQN/DQN_exR.png'))
-PATH = Path("""/home/arc/Documents/gym-factory/DQN_exR/""")
+PATH = Path("""/home/arc/Documents/gym-factory/DQN_nexR/""")
 # PATH1 = Path("""/home/arc/Documents/gym-factory/DQN_exR/DQN_exR.png""")
 
 

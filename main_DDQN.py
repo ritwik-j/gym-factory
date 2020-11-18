@@ -106,7 +106,7 @@ class Agent(object):
         self.actionSpace = actionSpace
         self.speedSpace = speedSpace
         self.memSize = maxMemorySize
-        self.steps = 0
+        self.steps = 0.0
         self.learn_step_counter = 0
         self.memory = []
         self.memCntr = 0
@@ -122,7 +122,7 @@ class Agent(object):
         self.memCntr += 1
 
     def chooseAction(self, observation):
-        # print("epsilon: ", self.EPSILON)
+        print("epsilon: ", self.EPSILON)
         rand = np.random.random()
         
         actions = self.Q_eval.forward(observation)
@@ -145,7 +145,7 @@ class Agent(object):
             armSpeed = np.random.choice(self.speedSpace)
             # print("best Action: ", bestAction)
             # print("armSpeed: ", armSpeed)
-        self.steps += 1
+        self.steps += 1.0
 
         return bestAction, armSpeed
 
@@ -214,11 +214,13 @@ class Agent(object):
             # print("Qpred", Qpred[i, armspeed, action])
 
 
-        if self.steps > 250:
-            if self.EPSILON - 1e-4 > self.EPS_END:
-                self.EPSILON -= 1e-4
-            else:
-                self.EPSILON = self.EPS_END
+        # if self.steps > 250:
+        #     if self.EPSILON - 1e-4 > self.EPS_END:
+        #         self.EPSILON -= 1e-4
+        #     else:
+        #         self.EPSILON = self.EPS_END
+
+        self.EPSILON = 1.0 - (self.steps/float(EPISODES))
 
         loss = self.Q_eval.loss(Qtarget, Qpred).to(self.Q_eval.device)
         # print("loss: ", loss)
@@ -292,7 +294,7 @@ def main():
     itemHistory.append(item)
 
     print('Beginning Training...')
-    for i in range(EPISODES):
+    for i in range((EPISODES)):
         print('starting episode', i+1, 'epsilon:', brain.EPSILON)
         epsHistory.append(brain.EPSILON)
 
