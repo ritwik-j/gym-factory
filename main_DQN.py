@@ -17,7 +17,7 @@ import os
 BATCH_SIZE = 32     # batch size for each training 
 MAX_MEM = 100       # size of memory in experience replay
 PROB = 0.5          # probability of skittle generation
-EPISODES = 2     # total episodes 
+EPISODES = 5000     # total episodes 
 
 # Non editable global variables 
 N_DISCRETE_ACTIONS = 27
