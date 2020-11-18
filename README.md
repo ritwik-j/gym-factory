@@ -11,6 +11,10 @@ The following are the libraries needed to run this project. The project is writt
 >numpy=1.19.4  
 >gym=0.17.3  
 
+To install the Gym package, clone the package to your local computer. Then navigate to the root directory and in terminal type:
+
+>`pip3 install -e .`
+
 ## Neural Networks Used
 
 | S/No. | Algorithm | Experience Replay | Epsilon  | Height Heuristic |
