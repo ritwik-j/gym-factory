@@ -54,10 +54,10 @@ Here we exemplify the use of the DDQN variation of the neural network. Please ch
 
 Open up `main_DDQN.py` for editing. In this script the following parameters can be defined:
 
->number of episodes = `EPISODES`
->batch size = `BATCH_SIZE`
->memory = `MAX_MEM`
->probability of skittle generation = `PROB`
+>number of episodes = `EPISODES`  
+>batch size = `BATCH_SIZE`  
+>memory = `MAX_MEM`  
+>probability of skittle generation = `PROB`  
 >directory = `PATH` 
 
 Once you have set the variables to your liking, run the code via
