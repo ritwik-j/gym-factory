@@ -11,26 +11,20 @@ from mpl_toolkits import mplot3d
 import os
 from pathlib import Path
 
-
-N_DISCRETE_ACTIONS = 27
-
-N_COLOURS = 7
-SpaceBetweenSkittles = 2 
 PROB = 0.8
-
+N_DISCRETE_ACTIONS = 27
+N_COLOURS = 7
 BELT_SPEED = 5
 WS_LENGTH = 30 *BELT_SPEED
 GEN_LENGTH = 30 *BELT_SPEED
 BELT_WIDTH = (((N_COLOURS*2)-1)*BELT_SPEED)+1
 BELT_LENGTH = WS_LENGTH + GEN_LENGTH
 HEIGHT = 6 *BELT_SPEED
-SkittleTypes = BELT_WIDTH/(BELT_SPEED*SpaceBetweenSkittles)
-
-
 IDLE_COST, GOAL_REWARD, COLLISION_COST = -0.2, 1.0, -1.0
 MIN_REWARD = -1
 MAX_REWARD = 1
-# opposite_actions = {0: -1, 1: 3, 2: 4, 3: 1, 4: 2, 5: 7, 6: 8, 7: 5, 8: 6}
+SpaceBetweenSkittles = 2 
+SkittleTypes = BELT_WIDTH/(BELT_SPEED*SpaceBetweenSkittles)
 
 # dictionary of possible actions (in 3D space)
 dirDict = {0:(0,0,0),1:(0,0,1),2:(0,1,0),
@@ -79,9 +73,8 @@ class FactoryEnv(gym.Env):
   def step(self, action, armSpeed):
     reward_indicator = self.armMove(action, armSpeed) # beltMove is called inside armMove
     _,ay,az = self.position[0], self.position[1], self.position[2] 
-    # print ("reward indicator: ", reward_indicator)
-    # get reward
 
+    # dictionary for height
     if (az < 5): 
       az = 0
     elif (az < 10):
@@ -93,6 +86,7 @@ class FactoryEnv(gym.Env):
     elif (az < 30):
       az = 20
 
+    # check reward indicator
     if reward_indicator > 8 or reward_indicator < 0:
       raise ("Error in return from ArmMove(): return out of bounds.")
     if ay > BELT_WIDTH or ay < 0:
@@ -113,17 +107,18 @@ class FactoryEnv(gym.Env):
     else:   
       reward = rewardDict[reward_indicator] + heighDict[az]
 
-    print("action: ", action, ", arm speed: ", armSpeed,", reward indicator: ", reward_indicator, ", result: ", reward, ", hold: ", self.hold,", item: ", self.item,", new position: ", self.position)
+    # print("action: ", action, ", arm speed: ", armSpeed,", reward indicator: ", reward_indicator, ", result: ", reward, ", hold: ", self.hold,", item: ", self.item,", new position: ", self.position)
     return reward
 
 
   def reset(self):
-    # Reset the state of the environment to an initial state
+    # Reset the state of the environment to the initial state
     self.finished = False
 
     self.fresh = True
 
   def _observe(self):
+    # returns the array representing belt and arm position in workspace
     genNP = np.array(self.gen)
     wsNP = np.array(self.workspace)
     
@@ -136,8 +131,10 @@ class FactoryEnv(gym.Env):
     return observation.tolist(), beltNP.tolist(), self.position, self.item
 
   def beltMove(self):
+    # function to move the belt 
     newSkittleColumn = []
     
+    # for loop to generate the skittles numbered from 1 to 7 randomly
     for i in range(BELT_WIDTH):
       if (i%BELT_SPEED==0):
           p = np.random.random()
@@ -147,16 +144,14 @@ class FactoryEnv(gym.Env):
             newSkittleColumn.append(0) # allocate empty space which = 0
       else:
           newSkittleColumn.append(0) # allocate empty space which = 0
-        
-
-    # print (newSkittleColumn)
 
     emptBeltRow = [0 for i in range(BELT_WIDTH)] # dummy row for insertion
 
     beltGEN_MAT = copy(self.gen)
     beltWS_MAT = copy(self.workspace)
 
-    if self.PreviousMoveDia == True:
+    # check the previous movement of the arm, and move the belt 
+    if self.PreviousMoveDia == True:    # if diagonal, belt moves by 7 steps
         for i in range(2):        #push Rand
             beltGEN_MAT = beltGEN_MAT.append(emptBeltRow)
             transfer = beltGEN_MAT.pop(0) #oldest piece of data
@@ -178,25 +173,25 @@ class FactoryEnv(gym.Env):
                 raise Exception("BELT_GEN exceeds bounds ")
 
 
-    else:
+    else:                         # if diagonal, belt moves by 5 steps
         for i in range(4):        #push (4)
             beltGEN_MAT.append(emptBeltRow)
             transfer = beltGEN_MAT.pop(0) #oldest piece of data
-            beltWS_MAT.append(transfer)
+            beltWS_MAT.append(transfer) # transfer last row of gen to first row of workspace
             beltWS_MAT.pop(0) #oldest piece of data
             if (len(beltWS_MAT)!=WS_LENGTH):
                 raise Exception("BELT_GEN exceeds bounds ")
         beltGEN_MAT.append(newSkittleColumn)        #push Rand
-        transfer = beltGEN_MAT.pop(0) #oldest piece of data
-        beltWS_MAT.append(transfer)
+        transfer = beltGEN_MAT.pop(0) # oldest piece of data
+        beltWS_MAT.append(transfer)   
         beltWS_MAT.pop(0) #oldest piece of data
 
     if self.CurrentMoveDia == True:
         for i in range(2):        #push Rand
             # beltGEN_MAT.append(emptBeltRow)
             beltGEN_MAT.append(emptBeltRow)
-            transfer = beltGEN_MAT.pop(0) #oldest piece of data
-            beltWS_MAT.append(transfer)
+            transfer = beltGEN_MAT.pop(0) # oldest piece of data
+            beltWS_MAT.append(transfer)   # transfer last row of gen to first row of workspace
             beltWS_MAT.pop(0) #oldest piece of data
             if (len(beltWS_MAT)!=WS_LENGTH):
                 raise Exception("BELT_GEN exceeds bounds ")
@@ -205,20 +200,12 @@ class FactoryEnv(gym.Env):
     self.gen = beltGEN_MAT
     self.world[:, :, 0] = beltGEN_MAT
 
-    # print('workspace')
-    # print(np.array(self.workspace))
-    # print('gen')
-    # print(np.array(self.gen))
-    # print('world')
-    # print(self.world)
-
   def armMove(self, action, armSpeed):
     print("Next Action: ", action)
     print("Next Speed: ", armSpeed)
     Direction = dirDict[action]
-    # Position = self.position
-    # print("Direction: ", Direction)
-    #check if arm movement is diagonal
+    
+    # check if arm movement is diagonal
     self.PreviousMoveDia = self.CurrentMoveDia
     if (action != 0 or action != 1 or action != 2 or action != 3 
       or action != 4 or action != 9 or action != 18):
@@ -234,17 +221,13 @@ class FactoryEnv(gym.Env):
         # no change in position
         return 8
     
-    # armSpeed = 1+(2*armSpeed)/10
+    # map armspeed of 1 to 9 to [5,15]
     armSpeed = floor(((2/9)*(armSpeed+1)+(7/9))*5)
     
     # Check Bounds
     dx,dy,dz = ceil(Direction[0]*armSpeed), ceil(Direction[1]*armSpeed) , ceil(Direction[2]*armSpeed)
-    # print('position:',Position)
+
     ax,ay,az = self.position[0], self.position[1],self.position[2]
-    
-    # print("ax: {}, ay: {}, az: {}".format(ax,ay,az))
-    # print("dx: {}, dy: {}, dz: {}".format(dx,dy,dz))
-    # print("hold: ", self.hold)
     
     if (ax+dx > self.world.shape[0]-1 or ax+dx < 0
         or ay+dy > self.world.shape[1]-1 or ay+dy < 0
@@ -260,21 +243,20 @@ class FactoryEnv(gym.Env):
                 if (ay+dy)%5 == 0:
                     if floor((ay+dy)/10)+1 == self.item and self.item != 0:
                         self.world[ax][ay][az] = 0
-                        self.world[ax+dx][ay+dy][az+dz] = 9  #right?
+                        self.world[ax+dx][ay+dy][az+dz] = 9  
                         self.position = (ax+dx, ay+dy, az+dz)
-                        # print("return 4")
                         return 4
                     else:
                         self.world[ax][ay][az] = 0
-                        self.world[ax+dx][ay+dy][az+dz] = 9  #right?
+                        self.world[ax+dx][ay+dy][az+dz] = 9  
                         self.position = (ax+dx, ay+dy, az+dz)
-                        # print("return 3")
+                        
                         return 3
             else:   # hit the belt
                 self.world[ax][ay][az] = 0
                 self.world[ax+dx][ay+dy][az+dz] = 9
                 self.position = (ax+dx, ay+dy, az+dz)
-                # print("return 5")
+                
                 return 5
 
         else:   #belt spot is occupied
@@ -282,18 +264,18 @@ class FactoryEnv(gym.Env):
                 self.hold = True
                 self.item = self.workspace[ax+dx][ay+dy]
                 self.world[ax][ay][az] = 0
-                self.world[ax+dx][ay+dy][az+dz] = 9  #right?
+                self.world[ax+dx][ay+dy][az+dz] = 9  
                 self.position = (ax+dx, ay+dy, az+dz)
                 if self.item == ((ay/10)+1):   # picked item which was at right place
-                  # print("return 1")
+                  
                   return 1
                 elif self.item != ((ay/10)+1): # picked item which was at wrong place
-                  # print("return 2")
+                  
                   return 2
             else:
                 self.world[ax+dx][ay+dy][az+dz] = 9
                 self.position = (ax+dx, ay+dy, az+dz)
-                # print("return 6")
+                
                 return 6
     # If not bound nor hit belt, then move in free space
     self.world[ax][ay][az] = 0
@@ -316,22 +298,16 @@ class FactoryEnv(gym.Env):
     # Plot function
     episodes = np.linspace(0, episodes, episodes)
     # Graph for number of steps in each episode
-    _, (ax1,ax2,ax4) = plt.subplots(3, 1, figsize=(10, 10))
-    # ax1.plot(episodes[window_size-1:], running_average(rewardHistory, window_size), 'r-', linewidth=0.5)
+    _, (ax1,ax2,ax3) = plt.subplots(3, 1, figsize=(10, 10))
+    
     ax1.plot(episodes, reward, 'r-', linewidth=0.5)
     ax1.set_ylabel('Rewards per episode')
     ax1.set_xlabel('Episodes')
     ax2.plot(episodes, loss, 'b-', linewidth=0.5)
     ax2.set_ylabel('Episodic Loss')
-    ax2.set_xlabel('Episodes')
-
-    # ax3 = fig.add_subplot(projection='3d')
-    # ax3 = plt.plot3D(self.position)
-    
-    # plt.matshow(conveyor, cmap=plt.cm.get_cmap('gist_stern', 7));
-    ax4.matshow(conveyor, cmap=plt.cm.get_cmap('nipy_spectral', 7))
-    # ax3.colorbar()
-    ax4.axis('off')
+    ax2.set_xlabel('Episodes')  
+    ax3.matshow(conveyor, cmap=plt.cm.get_cmap('nipy_spectral', 7))
+    ax3.axis('off')
     plt.pause(0.05)
     
     # plt.show()
