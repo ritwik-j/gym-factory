@@ -11,9 +11,9 @@ The following are the libraries needed to run this project. The project is writt
 >numpy=1.19.4  
 >gym=0.17.3  
 
-To install the Gym package, clone the package to your local computer. Then navigate to the root directory and in terminal type:
+To install the Gym package, clone the package to your local computer. Then in terminal navigate to the root directory of the repo and type:
 
->`pip3 install -e .`
+>`$ pip3 install -e .`
 
 ## Neural Networks Used
 
@@ -66,7 +66,7 @@ Open up `main_DDQN.py` for editing. In this script the following parameters can 
 
 Once you have set the variables to your liking, run the code via
 
->`python3 main_DDQN.py`
+>`$ python3 main_DDQN.py`
 
 ## Demonstration
 
