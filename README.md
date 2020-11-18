@@ -11,6 +11,8 @@ The following are the libraries needed to run this project. The project is writt
 >numpy=1.19.4  
 >gym=0.17.3
 
+Note: PyTorch has some teething issues with Conda environments, hence kindly use pyenv as specified in the requirements.txt file.
+
 ## Neural Networks Used
 
 | S/No. | Algorithm | Experience Replay | Epsilon  | Height Heuristic |
